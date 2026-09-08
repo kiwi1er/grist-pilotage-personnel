@@ -57,7 +57,7 @@
   </header>
 
   <main>
-    <section id="view-dashboard" class="view active"><div class="view-head"><div><h2>Vue d’ensemble</h2><p>Ce qui avance, ce qui arrive et le temps enregistré.</p></div><div class="sync-wrap"><div><button class="btn danger" id="reset-test-data">Réinitialiser les données de test</button> <button class="btn" id="import-projects">Synchroniser les demandes sélectionnées</button></div><span id="sync-status" class="sync-status"></span></div></div><div id="metrics" class="cards"></div><div class="dash-grid"><div class="panel"><h3>À surveiller</h3><div id="attention-list"></div></div><div class="panel"><h3>Bilan rapide de l’année</h3><div id="activity-summary"></div></div></div></section>
+    <section id="view-dashboard" class="view active"><div class="view-head"><div><h2>Vue d’ensemble</h2><p>Ce qui avance, ce qui arrive et le temps enregistré.</p></div><div class="sync-wrap"><div><button class="btn" id="import-projects">Synchroniser les demandes sélectionnées</button></div><span id="sync-status" class="sync-status"></span></div></div><div id="metrics" class="cards"></div><div class="dash-grid"><div class="panel"><h3>À surveiller</h3><div id="attention-list"></div></div><div class="panel"><h3>Bilan rapide de l’année</h3><div id="activity-summary"></div></div></div></section>
     <section id="view-kanban" class="view"><div class="view-head"><div><h2>Kanban des tâches</h2><p>Glissez une carte pour modifier son statut.</p></div></div><div id="kanban" class="kanban"></div></section>
     <section id="view-calendar" class="view"><div class="view-head"><div><h2>Calendrier</h2><p>Échéances des tâches et des projets.</p></div></div><div class="calendar-wrap"><div class="cal-toolbar"><button class="btn small" id="cal-prev">←</button><button class="btn small" id="cal-today">Aujourd’hui</button><strong id="cal-title"></strong><button class="btn small" id="cal-next">→</button></div><div id="calendar" class="calendar"></div></div></section>
     <section id="view-gantt" class="view"><div class="view-head"><div><h2>Gantt annuel</h2><p>Les grands projets et leurs tâches datées.</p></div></div><div id="gantt" class="gantt-shell"></div></section>
@@ -83,6 +83,6 @@
   </div></div><div class="modal-foot"><button type="button" id="delete-project" class="btn danger hidden">Supprimer</button><span style="flex:1"></span><button type="button" class="btn" data-close="project-modal">Annuler</button><button class="btn primary">Enregistrer</button></div></form></div>
   <div id="review-modal" class="modal-bg hidden" role="dialog" aria-modal="true"><div class="modal wide"><div class="modal-head"><div><h3>Préparer la revue</h3><div class="sub">Cochez uniquement les projets à présenter à la direction.</div></div><button type="button" class="btn icon" data-close="review-modal">×</button></div><div class="modal-body"><input id="review-search" class="review-search" type="search" placeholder="Rechercher un projet…"><div id="review-picker" class="review-picker"></div></div><div class="modal-foot"><button type="button" class="btn primary" data-close="review-modal">Terminer</button></div></div></div>
   <div id="toast" class="toast hidden"></div>
-  <script src="widget.js?v=9"></script>
+  <script src="widget.js?v=10"></script>
 </body>
 </html>
