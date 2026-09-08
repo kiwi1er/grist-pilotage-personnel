@@ -3,7 +3,7 @@
 
 var TABLES={projects:'PM_SoloProjects',tasks:'PM_SoloTasks',time:'PM_SoloTimeEntries',settings:'PM_SoloSettings'};
 var state={projects:[],tasks:[],time:[],lastSync:null,view:'dashboard',project:'',year:new Date().getFullYear(),showDone:false,calendar:new Date(new Date().getFullYear(),new Date().getMonth(),1),demo:false,tick:null,importing:false};
-var TASK_STATUSES=[['backlog','À organiser'],['todo','À faire'],['progress','En cours'],['waiting','En attente'],['done','Terminé'],['cancelled','Annulé']];
+var TASK_STATUSES=[['backlog','À organiser'],['todo','À faire'],['progress','En cours'],['waiting','En attente / arbitrage'],['done','Terminé'],['cancelled','Annulé']];
 var PROJECT_STATUSES={planned:'À préparer',active:'En cours',waiting:'En attente',done:'Finalisé',cancelled:'Annulé'};
 var MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 
