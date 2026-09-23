@@ -14,7 +14,7 @@
     .top-main{display:flex;align-items:center;gap:18px;padding:14px 20px}.brand{min-width:205px}.brand strong{display:block;font-size:18px}.brand span{color:var(--muted);font-size:12px}
     .tabs{display:flex;gap:4px;overflow:auto;flex:1}.tab{border:0;background:transparent;color:var(--muted);padding:9px 12px;border-radius:9px;white-space:nowrap;font-weight:650}.tab:hover{background:#eef1f8;color:var(--ink)}.tab.active{background:#e9ecff;color:var(--brand2)}
     .actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 13px;border-radius:9px;font-weight:700}.btn:hover{border-color:#b7c0d2}.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.primary:hover{background:var(--brand2)}.btn.danger{color:var(--red)}.btn.small{padding:6px 9px;font-size:12px}.btn.icon{width:36px;height:36px;padding:0}
-    .filters{display:flex;gap:10px;padding:0 20px 12px;align-items:center}.field-inline{display:flex;align-items:center;gap:7px;color:var(--muted)} select,input,textarea{border:1px solid #cfd7e5;border-radius:8px;background:#fff;color:var(--ink);padding:8px 10px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(67,85,217,.12)}
+    .filters{display:flex;flex-wrap:wrap;gap:10px;padding:0 20px 12px;align-items:center}.field-inline{display:flex;align-items:center;gap:7px;color:var(--muted)} select,input,textarea{border:1px solid #cfd7e5;border-radius:8px;background:#fff;color:var(--ink);padding:8px 10px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(67,85,217,.12)}
     main{padding:22px;max-width:1600px;margin:auto}.view{display:none}.view.active{display:block}.view-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.view-head h2{margin:0;font-size:20px}.view-head p{margin:3px 0 0;color:var(--muted)}
     .cards{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px}.metric{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:15px;box-shadow:0 2px 7px rgba(20,30,60,.04)}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:27px;margin-top:3px}.metric small{display:block;color:var(--muted)}
     .metric.clickable{cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s}.metric.clickable:hover{border-color:#aeb9ce;transform:translateY(-1px);box-shadow:0 6px 16px rgba(29,42,78,.09)}.metric-more{margin-top:9px;color:var(--brand)!important;font-weight:750}.sync-wrap{text-align:right}.sync-status{display:block;margin-top:5px;color:var(--muted);font-size:11px}
@@ -58,6 +58,8 @@
     </div>
     <div class="filters">
       <label class="field-inline">Projet <select id="project-filter"><option value="">Tous les projets</option></select></label>
+      <button type="button" id="open-selected-project" class="btn small" disabled onclick="openProject(state.project)">Ouvrir la fiche</button>
+      <button type="button" class="btn small" onclick="openDashboardDetail('all-projects')">Tous les projets</button>
       <label class="field-inline">Période <select id="year-filter"></select></label>
       <label class="field-inline"><input id="show-done" type="checkbox"> Afficher les éléments terminés</label>
       <span id="running-summary" class="badge blue hidden"></span>
@@ -102,6 +104,6 @@
 <style>.lane-add{width:100%;margin-bottom:10px;text-align:left;background:transparent;border-style:dashed}.lane-add:hover{background:#fff}.lane-add:focus-visible{outline:2px solid var(--brand);outline-offset:2px}</style>
 <div id="agenda-modal" class="modal-bg hidden" role="dialog" aria-modal="true" aria-labelledby="agenda-title"><div class="modal wide"><div class="modal-head"><h3 id="agenda-title">Rendez-vous</h3><button type="button" class="btn icon" data-close="agenda-modal" aria-label="Fermer">×</button></div><div id="agenda-body" class="modal-body"></div><div class="modal-foot"><button type="button" class="btn" data-close="agenda-modal">Fermer</button><button type="button" id="agenda-convert" class="btn primary">Créer une tâche / micro-tâche / jalon</button></div></div></div>
 <style>.event.agenda{background:#dff3f0;color:#125a52;border-left:3px solid #239786}#agenda-info{padding:0 12px 8px}#agenda-modal .modal-foot{flex-wrap:wrap}</style>
-<script src="widget.js?v=41"></script>
+<script src="widget.js?v=42"></script>
 </body>
 </html>
