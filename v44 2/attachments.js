@@ -123,7 +123,7 @@ async function viewNativeDocument(id){
 }
 async function uploadNativeBlob(blob,name){
   var form=new FormData();form.append('upload',blob,name);
-  var ids=await documentRequest('/attachments',{method:'POST',body:form,write:true});
+  var ids=await documentRequest('/attachments',{method:'POST',body:form,write:true,headers:{'X-Requested-With':'XMLHttpRequest'}});
   if(!Array.isArray(ids)||ids.length!==1||!Number.isSafeInteger(ids[0])||ids[0]<=0)throw new Error('Grist n’a pas confirmé l’envoi. Aucun nouvel essai automatique.');return ids[0];
 }
 async function withDocumentLock(work){
@@ -139,27 +139,50 @@ async function reusableAttachment(hash,size){
   var known=state.files.find(function(f){return f.SHA256===hash&&hasNativeDocument(f)});if(!known)return null;
   var full=await fetchDocumentRecord(known.id);await verifiedNativeBlob(full,hash,size);return attachmentId(full);
 }
+async function existingDocumentForUpload(type,parentId,file,hash){
+  var name=String(file.name).normalize('NFC');
+  var candidates=state.files.filter(function(f){return f.Parent_Type===type&&Number(f.Parent_Id)===parentId&&String(f.File_Name||'').normalize('NFC')===name});
+  for(var i=0;i<candidates.length;i++){
+    var candidate=candidates[i];
+    // A duplicate is a comparison, not a new verification/download operation.
+    // This also works when the native REST API is temporarily unavailable.
+    if(hasNativeDocument(candidate)&&candidate.SHA256===hash)return candidate;
+    var full=candidate;
+    if(!full.File_Data&&hasLegacyDocument(full))full=await fetchDocumentRecord(full.id);
+    if(full.File_Data){var blob=legacyDocumentBlob(full);if(blob.size===file.size&&await documentHash(blob)===hash)return candidate}
+  }
+  return null;
+}
 async function uploadNativeFiles(type,fileList){
-  var id=relatedId(type),files=Array.from(fileList||[]),status=$(type+'-file-status');if(!id||!files.length)return;
+  var id=relatedId(type),files=Array.from(fileList||[]),status=$(type+'-file-status'),compatible=$(type+'-file-mode')&&$(type+'-file-mode').value==='compatible';if(!id||!files.length)return;
   if(state.demo){toast('L’ajout de pièces jointes est disponible dans Grist.');return}
   try{await withDocumentLock(async function(){
-    var added=0,duplicates=0,errors=[];
+    var added=0,duplicates=0,errors=[],writeAttempted=false;
     for(var i=0;i<files.length;i++){
       var file=files[i];status.textContent='Ajout '+(i+1)+' / '+files.length+' : '+file.name;
       try{
-        if(file.size>DOCUMENT_MAX_BYTES)throw new Error('Limite du widget : 20 Mo par fichier.');
+        if(file.size>(compatible?5*1024*1024:DOCUMENT_MAX_BYTES))throw new Error(compatible?'Mode compatible : 5 Mo maximum par fichier.':'Limite du widget : 20 Mo par fichier.');
         var hash=await documentHash(file);
-        var duplicate=state.files.find(function(f){return f.Parent_Type===type&&Number(f.Parent_Id)===id&&f.File_Name===file.name&&f.SHA256===hash&&hasNativeDocument(f)});
-        if(duplicate){await verifiedNativeBlob(await fetchDocumentRecord(duplicate.id),hash,file.size);duplicates++;continue}
+        var duplicate=await existingDocumentForUpload(type,id,file,hash);
+        if(duplicate){duplicates++;continue}
+        if(compatible){
+          // Explicit choice before sending; never retry an uncertain native upload
+          // by silently creating another copy in the historical storage.
+          var legacyData=await readFile(file);
+          var legacyFields={Parent_Type:type,Parent_Id:id,File_Name:file.name,File_Type:file.type||'',File_Size:file.size,File_Data:legacyData,SHA256:hash,Created_At:now()};
+          writeAttempted=true;var legacyId=await addRecord(TABLES.files,legacyFields);legacyFields.id=legacyId;state.files.push(legacyFields);added++;continue;
+        }
         var nativeId=await reusableAttachment(hash,file.size)||await uploadNativeBlob(file,file.name);
         var fields={Parent_Type:type,Parent_Id:id,File_Name:file.name,File_Type:file.type||'',File_Size:file.size,File_Data:'',Attachment:['L',nativeId],SHA256:hash,Verified_At:null,Created_At:now()};
         // Attach first, then verify. If verification fails, the attached file stays
         // visible and can be verified again; it is never deleted automatically.
-        var rowId=await addRecord(TABLES.files,fields);fields.id=rowId;state.files.push(fields);
+        writeAttempted=true;var rowId=await addRecord(TABLES.files,fields);fields.id=rowId;state.files.push(fields);
         await verifiedNativeBlob(fields,hash,file.size);await updateRecord(TABLES.files,rowId,{Verified_At:now()});added++;
-      }catch(e){errors.push(file.name+' : '+e.message)}
+      }catch(e){errors.push(file.name+' : '+e.message+(!compatible?' Si l’accès reste bloqué, choisissez « Compatible » avant de sélectionner à nouveau le fichier.':''))}
     }
-    await loadData();if(relatedId(type)===id)renderRelated(type,id);
+    // Do not reload all tables (and legacy file contents in compatibility mode)
+    // when nothing was written, including a duplicate or a failed upload.
+    if(writeAttempted)await loadData();if(relatedId(type)===id)renderRelated(type,id);
     status.textContent=added+' ajouté(s), '+duplicates+' déjà présent(s).'+(errors.length?' '+errors.join(' · '):'');
   })}catch(e){status.textContent=e.message}
 }
