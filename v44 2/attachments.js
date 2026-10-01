@@ -95,16 +95,29 @@ function safePreviewType(file){
   if(/^text\//.test(type)||/\.(txt|csv|md|json)$/.test(name))return 'text/plain';
   return '';
 }
+async function prepareDocumentPreviewFrame(blob,type){
+  var frame=$('file-preview-frame');
+  // Native PDF viewers cannot run inside a sandboxed iframe. Only relax this
+  // frame for PDF bytes, which are subsequently served with application/pdf.
+  // HTML and other text keep both the sandbox and a forced text/plain MIME.
+  frame.setAttribute('sandbox','allow-same-origin allow-downloads');
+  if(type==='application/pdf'){
+    var header=await blob.slice(0,1024).text();
+    if(!header.includes('%PDF-'))throw new Error('Ce fichier ne semble pas être un PDF valide. Vous pouvez toujours le télécharger.');
+    return true;
+  }
+  return false;
+}
 async function viewNativeDocument(id){
   var file=state.files.find(function(f){return String(f.id)===String(id)});if(!file)return;
   var request=++documentStorage.previewRequest;if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=''}
   $('file-preview-title').textContent=file.File_Name||'Document';$('file-preview-info').textContent=formatFileSize(file.File_Size)+' · Chargement…';
-  $('file-preview-frame').src='about:blank';$('file-preview-frame').classList.add('hidden');$('file-preview-unavailable').classList.remove('hidden');$('file-preview-message').textContent='Chargement du document…';$('file-preview-open').classList.add('hidden');$('file-preview-download').disabled=true;showModal('file-preview-modal');
+  $('file-preview-frame').setAttribute('sandbox','allow-same-origin allow-downloads');$('file-preview-frame').src='about:blank';$('file-preview-frame').classList.add('hidden');$('file-preview-unavailable').classList.remove('hidden');$('file-preview-message').textContent='Chargement du document…';$('file-preview-open').classList.add('hidden');$('file-preview-download').disabled=true;showModal('file-preview-modal');
   try{
     var blob=await loadDocumentBlob(file);if(request!==documentStorage.previewRequest)return;
     var type=safePreviewType(file);$('file-preview-info').textContent=formatFileSize(blob.size)+(file.File_Type?' · '+file.File_Type:'');
     $('file-preview-download').disabled=false;$('file-preview-download').onclick=function(){saveDocumentBlob(blob,file.File_Name)};
-    if(type){previewUrl=URL.createObjectURL(new Blob([blob],{type:type}));$('file-preview-frame').src=previewUrl;$('file-preview-frame').classList.remove('hidden');$('file-preview-unavailable').classList.add('hidden');$('file-preview-open').classList.remove('hidden');$('file-preview-open').onclick=function(){window.open(previewUrl,'_blank','noopener')}}
+    if(type){var nativePdf=await prepareDocumentPreviewFrame(blob,type);if(request!==documentStorage.previewRequest)return;if(nativePdf)$('file-preview-frame').removeAttribute('sandbox');previewUrl=URL.createObjectURL(new Blob([blob],{type:type}));$('file-preview-frame').src=previewUrl;$('file-preview-frame').classList.remove('hidden');$('file-preview-unavailable').classList.add('hidden');$('file-preview-open').classList.remove('hidden');$('file-preview-open').onclick=function(){window.open(previewUrl,'_blank','noopener')}}
     else $('file-preview-message').textContent='Téléchargez ce document pour l’ouvrir dans son application habituelle.';
   }catch(e){if(request===documentStorage.previewRequest){$('file-preview-info').textContent='Chargement impossible';$('file-preview-message').textContent=e.message}}
 }
